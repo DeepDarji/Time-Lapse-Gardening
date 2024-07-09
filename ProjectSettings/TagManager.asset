@@ -8,7 +8,7 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Obj
   - Water
   - UI
   - 
@@ -38,6 +38,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Plants
+    uniqueID: 3317101165
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
