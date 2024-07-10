@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5153205801802245934}
   - component: {fileID: 1899362173996842152}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: WateringCan
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3109810864197912566}
   - component: {fileID: 2027621643409668653}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: WateringCan
   m_TagString: Untagged
   m_Icon: {fileID: 0}

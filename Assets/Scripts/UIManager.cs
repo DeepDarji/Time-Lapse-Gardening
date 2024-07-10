@@ -6,88 +6,90 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    public GameObject[] plantPrefabs; // Array of different plant prefabs
+    public GameObject[] plantPrefabs; // Array to hold different plant prefabs
     public GameObject wateringCan;
-    public Button[] plantButtons; // Array of buttons for different plants
+    public Button[] plantButtons; // Array to hold different plant buttons
     public Button waterButton;
     public Button timeLapseButton;
     public TimeLapse timeLapse;
 
-    private float plantSpacing = 1f; // Minimum distance between plants
-
-    private Vector3[] area1 = {
-        new Vector3(-7, 4, 0),
-        new Vector3(5, 4, 0)
-    };
-
-    private Vector3[] area2 = {
-        new Vector3(-7, -1, 0),
-        new Vector3(5, -1, 0)
-    };
+    private GameObject selectedPlantPrefab;
+    private Vector2[] plantPositions = new Vector2[20]; // Array to store potential positions for plants
+    private int currentPlantIndex = 0; // Track current index for plant positions
 
     void Start()
     {
         for (int i = 0; i < plantButtons.Length; i++)
         {
-            int index = i; // Capture the index
-            plantButtons[i].onClick.AddListener(() => PlantSeed(index));
+            int index = i; // Local copy of i for the lambda expression
+            plantButtons[i].onClick.AddListener(() => SelectPlant(index));
         }
 
         waterButton.onClick.AddListener(EnableWatering);
-
-        // Add a listener for the time lapse button directly in code
         timeLapseButton.onClick.AddListener(ToggleTimeLapse);
+
+        // Initialize plant positions
+        InitializePlantPositions();
     }
 
-    void PlantSeed(int index)
+    void Update()
     {
-        Vector3 plantPosition = GetRandomPosition(index);
-        if (!IsPositionOccupied(plantPosition))
+        if (Input.GetMouseButtonDown(0))
         {
-            // Check if watering button is active
-            bool isWateringActive = wateringCan.activeSelf;
+            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Collider2D hitCollider = Physics2D.OverlapPoint(mousePosition);
 
-            // Instantiate the plant prefab
-            GameObject newPlant = Instantiate(plantPrefabs[index], plantPosition, Quaternion.identity);
-
-            // Set the plant's active state based on the watering button
-            newPlant.SetActive(isWateringActive);
-
-            // Log to console for debugging (optional)
-            Debug.Log($"Planted plant {index}. Watering active: {isWateringActive}");
-        }
-    }
-
-    Vector3 GetRandomPosition(int index)
-    {
-        Vector3 start, end;
-
-        if (index == 0) // For the first plant type
-        {
-            start = area1[0];
-            end = area1[1];
-        }
-        else // For the second plant type
-        {
-            start = area2[0];
-            end = area2[1];
-        }
-
-        float randomX = UnityEngine.Random.Range(start.x, end.x); // Specify UnityEngine.Random here
-        return new Vector3(randomX, start.y, 0);
-    }
-
-    bool IsPositionOccupied(Vector3 position)
-    {
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(position, plantSpacing);
-        foreach (Collider2D collider in hitColliders)
-        {
-            if (collider.GetComponent<Plant>() != null)
+            if (hitCollider != null)
             {
-                return true; // Position is occupied by another plant
+                if (hitCollider.gameObject == waterButton.gameObject)
+                {
+                    EnableWatering();
+                }
+                else if (hitCollider.gameObject == timeLapseButton.gameObject)
+                {
+                    ToggleTimeLapse();
+                }
+                else if (selectedPlantPrefab != null && currentPlantIndex < plantPositions.Length)
+                {
+                    PlantSeed();
+                }
             }
         }
-        return false; // Position is free
+    }
+
+    void InitializePlantPositions()
+    {
+        int index = 0;
+        for (float x = -7; x <= 5; x += 2) // Adjust step as needed
+        {
+            plantPositions[index] = new Vector2(x, 4);
+            index++;
+        }
+        for (float x = -7; x <= 5; x += 2) // Adjust step as needed
+        {
+            plantPositions[index] = new Vector2(x, -1);
+            index++;
+        }
+    }
+
+    void SelectPlant(int index)
+    {
+        selectedPlantPrefab = plantPrefabs[index];
+        Debug.Log("Selected plant: " + selectedPlantPrefab.name);
+    }
+
+    void PlantSeed()
+    {
+        if (selectedPlantPrefab != null && currentPlantIndex < plantPositions.Length)
+        {
+            Vector2 spawnPosition = plantPositions[currentPlantIndex];
+            Instantiate(selectedPlantPrefab, new Vector3(spawnPosition.x, spawnPosition.y, 0), Quaternion.identity);
+            currentPlantIndex++;
+        }
+        else
+        {
+            Debug.Log("No more positions available for planting.");
+        }
     }
 
     void EnableWatering()
@@ -97,7 +99,6 @@ public class UIManager : MonoBehaviour
 
     void ToggleTimeLapse()
     {
-        // Toggle the time lapse feature
         timeLapse.ToggleTimeLapse();
     }
 }
